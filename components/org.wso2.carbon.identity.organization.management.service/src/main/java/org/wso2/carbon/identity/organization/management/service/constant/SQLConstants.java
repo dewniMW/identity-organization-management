@@ -99,8 +99,32 @@ public class SQLConstants {
             SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_PARENT_ID + "; AND UM_TENANT_ID = :" +
             SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_TENANT_ID + ";";
 
+    public static final String GET_ALL_MANDATORY_ORGANIZATION_USER_ROLE_MAPPINGS = "SELECT * FROM UM_USER_ROLE_ORG" +
+            " WHERE ORG_ID = :" + SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_PARENT_ID +
+            "; AND UM_TENANT_ID = :" + SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_TENANT_ID +
+            "; AND MANDATORY = :" + SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_MANDATORY + ";";
+
+    public static final String ADD_MANDATORY_ORGANIZATION_USER_ROLE_MAPPINGS = "INSERT INTO UM_USER_ROLE_ORG (UM_ID, " +
+            "UM_USER_ID, UM_ROLE_ID," +
+            "UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID, ASSIGNED_AT, MANDATORY) VALUES ";
+    public static final String ADD_MANDATORY_ORGANIZATION_USER_ROLE_MAPPINGS_MAPPING = "(:" +
+            SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_ID + "%1$d;,:" +
+            SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_USER_ID + "%1$d;,:" +
+            SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_ROLE_ID + "%1$d;,:" +
+            SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_HYBRID_ROLE_ID + "%1$d;,:" +
+            SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_TENANT_ID + "%1$d;,:" +
+            SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_ORG_ID + "%1$d;,:" +
+            SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_ASSIGNED_AT + "%1$d;,:" +
+            SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_MANDATORY + "%1$d;)";
+
     public static final String COUNT_COLUMN = "COUNT(1)";
+
     public static final String VIEW_ID_COLUMN = "UM_ID";
+    public static final String VIEW_USER_ID_COLUMN = "UM_USER_ID";
+    public static final String VIEW_ROLE_ID_COLUMN = "UM_ROLE_ID";
+    public static final String VIEW_HYBRID_ROLE_ID_COLUMN = "UM_HYBRID_ROLE_ID";
+    public static final String VIEW_ASSIGNED_AT_COLUMN = "ASSIGNED_AT";
+    public static final String VIEW_MANDATORY_COLUMN = "MANDATORY";
 
     /**
      * SQL Placeholders
@@ -116,5 +140,11 @@ public class SQLConstants {
         public static final String DB_SCHEMA_COLUMN_NAME_PARENT_ID = "PARENT_ID";
         public static final String DB_SCHEMA_COLUMN_NAME_KEY = "KEY";
         public static final String DB_SCHEMA_COLUMN_NAME_VALUE = "VALUE";
+        public static final String DB_SCHEMA_COLUMN_NAME_MANDATORY = "MANDATORY";
+        public static final String DB_SCHEMA_COLUMN_NAME_USER_ID = "USER_ID";
+        public static final String DB_SCHEMA_COLUMN_NAME_HYBRID_ROLE_ID = "HYBRID_ROLE_ID";
+        public static final String DB_SCHEMA_COLUMN_NAME_ROLE_ID = "ROLE_ID";
+        public static final String DB_SCHEMA_COLUMN_NAME_ORG_ID = "ORG_ID";
+        public static final String DB_SCHEMA_COLUMN_NAME_ASSIGNED_AT = "ASSIGNED_AT";
     }
 }
