@@ -98,7 +98,7 @@ Type,
 Alternatively can use `mvn clean install -DskipTests` or `mvn clean install Dmaven.skip.test=true` to skip tests.
 
 - Copy the `api#identitiy#organization-mgt#v1.0.war` file to `{IS-HOME}/repository/deployment/server/webapps`
-- Copy the `org.wso2.carbon.identity.organization.role.mgt.core-<version>.jar` file to `{IS-HOME}/repository/components/dropins`
+- Copy the `org.wso2.carbon.identity.organization.management.service-<version>.jar` file to `{IS-HOME}/repository/components/dropins`
 
 ## Check the OSGI Service is working
 
