@@ -30,6 +30,7 @@ import org.wso2.carbon.identity.organization.management.service.exception.Organi
 import org.wso2.carbon.identity.organization.management.service.model.Operation;
 import org.wso2.carbon.identity.organization.management.service.model.Organization;
 import org.wso2.carbon.identity.organization.management.service.model.OrganizationAttribute;
+import org.wso2.carbon.identity.organization.management.service.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.management.service.util.Utils;
 
 import java.sql.Timestamp;
@@ -41,6 +42,7 @@ import java.util.TimeZone;
 
 import static java.time.ZoneOffset.UTC;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_ERROR_ADDING_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_ERROR_ADDING_ORGANIZATION_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_ERROR_CHECKING_ORGANIZATION_ATTRIBUTE_KEY_EXIST;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_ERROR_CHECKING_ORGANIZATION_EXIST_BY_ID;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_ERROR_CHECKING_ORGANIZATION_EXIST_BY_NAME;
@@ -68,6 +70,8 @@ import static org.wso2.carbon.identity.organization.management.service.constant.
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.VIEW_LAST_MODIFIED_COLUMN;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.VIEW_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.VIEW_PARENT_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.ADD_MANDATORY_ORGANIZATION_USER_ROLE_MAPPINGS;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.ADD_MANDATORY_ORGANIZATION_USER_ROLE_MAPPINGS_MAPPING;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.CHECK_CHILD_ORGANIZATIONS_EXIST;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.CHECK_ORGANIZATION_ATTRIBUTE_KEY_EXIST;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
@@ -76,6 +80,7 @@ import static org.wso2.carbon.identity.organization.management.service.constant.
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.DELETE_ORGANIZATION_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.DELETE_ORGANIZATION_ATTRIBUTES_BY_ID;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.DELETE_ORGANIZATION_BY_ID;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.GET_ALL_MANDATORY_ORGANIZATION_USER_ROLE_MAPPINGS;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.GET_CHILD_ORGANIZATIONS;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.GET_ORGANIZATIONS_BY_TENANT_ID;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
@@ -84,19 +89,30 @@ import static org.wso2.carbon.identity.organization.management.service.constant.
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.INSERT_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.PATCH_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.PATCH_ORGANIZATION_CONCLUDE;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_ASSIGNED_AT;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_CREATED_TIME;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_DESCRIPTION;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_HYBRID_ROLE_ID;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_ID;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_KEY;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_LAST_MODIFIED;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_MANDATORY;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_NAME;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_ORG_ID;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_PARENT_ID;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_ROLE_ID;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_TENANT_ID;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_USER_ID;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.SQLPlaceholders.DB_SCHEMA_COLUMN_NAME_VALUE;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.UPDATE_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.UPDATE_ORGANIZATION_ATTRIBUTE_VALUE;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.UPDATE_ORGANIZATION_LAST_MODIFIED;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.VIEW_ASSIGNED_AT_COLUMN;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.VIEW_HYBRID_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.VIEW_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.VIEW_MANDATORY_COLUMN;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.VIEW_ROLE_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.management.service.constant.SQLConstants.VIEW_USER_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.management.service.util.Utils.handleServerException;
 
 /**
@@ -114,7 +130,7 @@ public class OrganizationManagementDAOImpl implements OrganizationManagementDAO 
         NamedJdbcTemplate namedJdbcTemplate = Utils.getNewTemplate();
         try {
             namedJdbcTemplate.withTransaction(template -> {
-                namedJdbcTemplate.executeInsert(INSERT_ORGANIZATION, namedPreparedStatement -> {
+                template.executeInsert(INSERT_ORGANIZATION, namedPreparedStatement -> {
                     namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_ID, organization.getId());
                     namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_NAME, organization.getName());
                     namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_DESCRIPTION, organization.getDescription());
@@ -130,8 +146,61 @@ public class OrganizationManagementDAOImpl implements OrganizationManagementDAO 
                 }
                 return null;
             });
+            //after adding organization we can add the mandatory roles coming from parent.
+            insertOrganizationUserRoleMappingsForMandatoryRoles(organization.getId(),
+                    organization.getParent().getId(), tenantId);
         } catch (TransactionException e) {
             throw handleServerException(ERROR_CODE_ERROR_ADDING_ORGANIZATION, e, tenantDomain);
+        }
+    }
+
+    private void insertOrganizationUserRoleMappingsForMandatoryRoles(String organizationId, String parentId,
+                                                                     int tenantId)
+            throws OrganizationManagementServerException {
+        NamedJdbcTemplate namedJdbcTemplate = Utils.getNewTemplate();
+        try {
+            List<OrganizationUserRoleMapping> organizationUserRoleMappingList =
+                    namedJdbcTemplate.executeQuery(GET_ALL_MANDATORY_ORGANIZATION_USER_ROLE_MAPPINGS,
+                            (resultSet, resultRow) ->
+                                    new OrganizationUserRoleMapping(parentId,
+                                            resultSet.getString(VIEW_USER_ID_COLUMN),
+                                            resultSet.getInt(VIEW_HYBRID_ROLE_ID_COLUMN),
+                                            resultSet.getString(VIEW_ROLE_ID_COLUMN),
+                                            resultSet.getString(VIEW_ASSIGNED_AT_COLUMN),
+                                            resultSet.getInt(VIEW_MANDATORY_COLUMN) == 1),
+                            namedPreparedStatement -> {
+                                namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_PARENT_ID, parentId);
+                                namedPreparedStatement.setInt(DB_SCHEMA_COLUMN_NAME_TENANT_ID, tenantId);
+                                namedPreparedStatement.setInt(DB_SCHEMA_COLUMN_NAME_MANDATORY, 1);
+                            });
+            if (CollectionUtils.isNotEmpty(organizationUserRoleMappingList)) {
+                int n = organizationUserRoleMappingList.size();
+                namedJdbcTemplate.executeInsert(buildOrganizationUserRoleMappingQuery(n),
+                        namedPreparedStatement -> {
+                            for (int i = 0; i < n; i++) {
+                                OrganizationUserRoleMapping organizationUserRoleMapping =
+                                        organizationUserRoleMappingList.get(i);
+                                namedPreparedStatement.setString(String.format(DB_SCHEMA_COLUMN_NAME_ID + "%d", i),
+                                        Utils.generateUniqueID());
+                                namedPreparedStatement.setString(String.format(DB_SCHEMA_COLUMN_NAME_USER_ID + "%d", i),
+                                        organizationUserRoleMapping.getUserId());
+                                namedPreparedStatement.setString(String.format(DB_SCHEMA_COLUMN_NAME_ROLE_ID + "%d", i),
+                                        organizationUserRoleMapping.getRoleId());
+                                namedPreparedStatement.setInt(String.format(DB_SCHEMA_COLUMN_NAME_HYBRID_ROLE_ID + "%d",
+                                        i), organizationUserRoleMapping.getHybridRoleId());
+                                namedPreparedStatement.setInt(String.format(DB_SCHEMA_COLUMN_NAME_TENANT_ID + "%d", i),
+                                        tenantId);
+                                namedPreparedStatement.setString(String.format(DB_SCHEMA_COLUMN_NAME_ORG_ID + "%d", i),
+                                        organizationId);
+                                namedPreparedStatement.setString(String.format(DB_SCHEMA_COLUMN_NAME_ASSIGNED_AT + "%d",
+                                        i), parentId);
+                                namedPreparedStatement.setInt(String.format(DB_SCHEMA_COLUMN_NAME_MANDATORY + "%d", i),
+                                        1); //since mandatory
+                            }
+                        }, organizationUserRoleMappingList, false);
+            }
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_ERROR_ADDING_ORGANIZATION_ROLE_MAPPING, e);
         }
     }
 
@@ -139,17 +208,17 @@ public class OrganizationManagementDAOImpl implements OrganizationManagementDAO 
 
         String organizationId = organization.getId();
         NamedJdbcTemplate namedJdbcTemplate = Utils.getNewTemplate();
-            namedJdbcTemplate.withTransaction(template -> {
-                template.executeBatchInsert(INSERT_ATTRIBUTE, (namedPreparedStatement -> {
-                    for (OrganizationAttribute attribute : organization.getAttributes()) {
-                        namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_ID, organizationId);
-                        namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_KEY, attribute.getKey());
-                        namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_VALUE, attribute.getValue());
-                        namedPreparedStatement.addBatch();
-                    }
-                }), organizationId);
-                return null;
-            });
+        namedJdbcTemplate.withTransaction(template -> {
+            template.executeBatchInsert(INSERT_ATTRIBUTE, (namedPreparedStatement -> {
+                for (OrganizationAttribute attribute : organization.getAttributes()) {
+                    namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_ID, organizationId);
+                    namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_KEY, attribute.getKey());
+                    namedPreparedStatement.setString(DB_SCHEMA_COLUMN_NAME_VALUE, attribute.getValue());
+                    namedPreparedStatement.addBatch();
+                }
+            }), organizationId);
+            return null;
+        });
     }
 
     @Override
@@ -534,5 +603,17 @@ public class OrganizationManagementDAOImpl implements OrganizationManagementDAO 
             }
         });
         return organization;
+    }
+
+    private String buildOrganizationUserRoleMappingQuery(int numberOfMandatoryRoles) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(ADD_MANDATORY_ORGANIZATION_USER_ROLE_MAPPINGS);
+        for (int i = 0; i < numberOfMandatoryRoles; i++) {
+            sb.append(String.format(ADD_MANDATORY_ORGANIZATION_USER_ROLE_MAPPINGS_MAPPING, i));
+            if (i != numberOfMandatoryRoles - 1) {
+                sb.append(",");
+            }
+        }
+        return sb.toString();
     }
 }

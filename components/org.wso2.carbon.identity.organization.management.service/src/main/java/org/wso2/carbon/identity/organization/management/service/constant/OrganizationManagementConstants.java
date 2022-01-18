@@ -136,7 +136,9 @@ public class OrganizationManagementConstants {
         ERROR_CODE_ERROR_BUILDING_RESPONSE_HEADER_URL("65017", "Unable to build created organization URL.",
                 "Server encountered an error while building URL for response header."),
         ERROR_CODE_ERROR_BUILDING_URL_FOR_RESPONSE_BODY("65018", "Unable to build the URL.",
-                "Server encountered an error while building URL for response body.");
+                "Server encountered an error while building URL for response body."),
+        ERROR_CODE_ERROR_ADDING_ORGANIZATION_ROLE_MAPPING("65019", "Unable to create organization-user-role mappings",
+                "Server encountered an error while creating user role mappings.");
 
         private final String code;
         private final String message;
